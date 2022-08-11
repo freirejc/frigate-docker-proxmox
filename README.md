@@ -1,6 +1,10 @@
 # frigate-docker-proxmox
 Comandos para Instação do Frigate numa Docker no Proxmox
 
+Tutorial completo disponível no Youtube:
+https://youtu.be/rpX3JZ2FiZg
+
+
 Veja abaixo os comandos utilizados na instalação
 
 1. Atualizar o Debian
@@ -117,6 +121,7 @@ cameras:
 
 
 Links úteis
+
 https://docs.frigate.video/installation/
 
 https://docs.docker.com/compose/install/compose-plugin/
