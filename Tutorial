@@ -1,0 +1,123 @@
+Veja abaixo os comandos utilizados na instalação 
+Tutorial completo disponível em: 
+https://youtu.be/rpX3JZ2FiZg
+
+1. Atualizar o Debian
+
+apt update
+
+apt upgrade
+
+
+2. Instalar docker e Atualizar os pacotes APT para permitir o uso do APT via HTTPS:
+
+apt-get update
+
+apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+3. Adicionar chave oficial do docker GPG:
+
+curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+
+echo \
+"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+$(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+
+
+4. Atualizar os Index do pacote APT, e instalar a última versão do Docker:
+
+apt-get update
+
+apt-get install docker-ce docker-ce-cli containerd.io
+
+
+5. Verificar se o Docker está rodando no sistema:
+
+systemctl status docker
+
+
+6. Instalar o Portainer com as portas 9000 and 8000. O Edge Agent roda na porta  8000.
+
+docker run -d \
+--name="portainer" \
+--restart on-failure \
+-p 9000:9000 \
+-p 8000:8000 \
+-v /var/run/docker.sock:/var/run/docker.sock \
+-v portainer_data:/data \
+portainer/portainer-ce:latest
+
+
+7. Instalação do Plugin do Docker Compose
+            https://docs.docker.com/compose/install/compose-plugin/
+
+
+apt-get update
+
+apt-get install docker-compose-plugin
+
+apt-cache madison docker-compose-plugin
+
+apt-get install docker-compose-plugin=<VERSION_STRING>
+
+docker compose version
+
+
+8. Configurar o arquivo Docker Compose Frigate (docker-compose.yml)
+
+version: "3.9"
+services:
+  frigate:
+    container_name: frigate
+    privileged: true # this may not be necessary for all setups
+    restart: unless-stopped
+    image: blakeblackshear/frigate:stable-amd64
+    shm_size: "64mb" # update for your cameras based on calculation above
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/frigate/config.yml:/config/config.yml:ro
+      - /usr/frigate:/media/frigate
+      - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "5000:5000"
+      - "1935:1935" # RTMP feeds
+    environment:
+      FRIGATE_RTSP_PASSWORD: "PASSWORD"
+
+
+9. Depois que salvar o arquivo acima rodar o seguinte comando para subir o docker compose e o Frigate
+
+docker compose up -d
+
+10. Configurar o arquivo config.yml
+
+mqtt:
+  host: 192.168.10.210
+  user: PASSWORD
+  password: PASSWORD
+
+cameras:
+  varanda:
+    ffmpeg:
+      inputs:
+        - path: rtsp://192.168.10.206:554/user=admin&password=PASSWORD&channel=1&stream=1.sdp?
+          roles:
+            - rtmp
+
+
+Links úteis
+https://docs.frigate.video/installation/
+
+https://docs.docker.com/compose/install/compose-plugin/
+
+https://github.com/blakeblackshear/frigate
